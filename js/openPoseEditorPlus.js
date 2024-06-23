@@ -79,94 +79,53 @@ class OpenPose {
     this.history_change = false;
     this.canvas = this.initCanvas(canvasElement);
     this.image = node.widgets.find((w) => w.name === "image");
-        // 创建用于选择图片的input元素
     this.backgroundInput = document.createElement("input");
     this.backgroundInput.type = "file";
     this.backgroundInput.accept = "image/*";
     this.backgroundInput.style.display = "none";
     this.backgroundInput.addEventListener("change", this.onLoadBackground.bind(this));
     document.body.appendChild(this.backgroundInput);
-
-    }
-
-    // 创建更换背景的按钮
-  //referenceImage() {
-  //    button.addEventListener("click", () => this.backgroundInput.click());
-  //}
-
-	// 处理背景图片的加载
-  onLoadBackground(e) {
-  const file = this.backgroundInput.files[0];
-  const url = URL.createObjectURL(file);
-  this.setBackgroundImage(url);
   }
-
-    // 设置背景图片
-  setBackgroundImage(url) {
-        fabric.Image.fromURL(url, (img) => {
-            img.set({
-                originX: 'left',
-                originY: 'top',
-                opacity: 0.5
-            });
-              /*
-              var width = img.width; // 图片的宽度  
-			  var height = img.height; // 图片的高度  
-			  var minSideLength; // 最小边长  
-			  
-			  if (width < height) {  
-				// 宽度小于高度，所以最短边是宽度  
-				minSideLength = width;  
-				img.scaleX = canvas.width / img.width;
-				img.scaleY = canvas.width / img.width;
-			  } else {  
-				// 宽度大于或等于高度，所以最短边是高度或两者相等  
-				minSideLength = height;  
-				img.scaleX = this.canvas.height / img.height;  
-				img.scaleY = this.canvas.height / img.height;  
-			  }  
-            */
-			this.canvas.setWidth(img.width);
-			this.canvas.setHeight(img.height);
-			
-            this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas));
-        });
-    }
 
   setPose(keypoints) {
     this.canvas.clear();
-
     this.canvas.backgroundColor = "#000";
-
     const res = [];
     for (let i = 0; i < keypoints.length; i += 18) {
       const chunk = keypoints.slice(i, i + 18);
       res.push(chunk);
     }
-
     for (let item of res) {
       this.addPose(item);
       this.canvas.discardActiveObject();
     }
   }
 
+  onLoadBackground(e) {
+    const file = this.backgroundInput.files[0];
+    const url = URL.createObjectURL(file);
+    this.setBackgroundImage(url);
+  }
+
+  setBackgroundImage(url) {
+    fabric.Image.fromURL(url, (img) => {
+      img.set({
+        originX: 'left',
+        originY: 'top',
+        opacity: 0.5,
+      });
+      this.canvas.setWidth(1024);
+      this.canvas.setHeight(1024);
+      this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas));
+    });
+  }
+
   addPose(keypoints = undefined) {
     if (keypoints === undefined) {
       keypoints = default_keypoints;
     }
-
     const group = new fabric.Group();
-
-    const makeCircle = (
-      color,
-      left,
-      top,
-      line1,
-      line2,
-      line3,
-      line4,
-      line5
-    ) => {
+    const makeCircle = (color, left, top, line1, line2, line3, line4, line5) => {
       let c = new fabric.Circle({
         left: left,
         top: top,
@@ -175,17 +134,14 @@ class OpenPose {
         fill: color,
         stroke: color,
       });
-
       c.hasControls = c.hasBorders = false;
       c.line1 = line1;
       c.line2 = line2;
       c.line3 = line3;
       c.line4 = line4;
       c.line5 = line5;
-
       return c;
     };
-
     const makeLine = (coords, color) => {
       return new fabric.Line(coords, {
         fill: color,
@@ -195,12 +151,9 @@ class OpenPose {
         evented: false,
       });
     };
-
     const lines = [];
     const circles = [];
-
     for (let i = 0; i < connect_keypoints.length; i++) {
-      // 接続されるidxを指定　[0, 1]なら0と1つなぐ
       const item = connect_keypoints[i];
       const line = makeLine(
         keypoints[item[0]].concat(keypoints[item[1]]),
@@ -209,10 +162,8 @@ class OpenPose {
       lines.push(line);
       this.canvas.add(line);
     }
-
     for (let i = 0; i < keypoints.length; i++) {
       let list = [];
-
       connect_keypoints.filter((item, idx) => {
         if (item.includes(i)) {
           list.push(lines[idx]);
@@ -229,7 +180,6 @@ class OpenPose {
       circles.push(circle);
       group.addWithUpdate(circle);
     }
-
     this.canvas.discardActiveObject();
     this.canvas.setActiveObject(group);
     this.canvas.add(group);
@@ -242,14 +192,12 @@ class OpenPose {
       backgroundColor: "#000",
       preserveObjectStacking: true,
     });
-
     const updateLines = (target) => {
       if ("_objects" in target) {
         const flipX = target.flipX ? -1 : 1;
         const flipY = target.flipY ? -1 : 1;
         this.flipped = flipX * flipY === -1;
         const showEyes = this.flipped ? !this.visibleEyes : this.visibleEyes;
-
         if (target.angle === 0) {
           const rtop = target.top;
           const rleft = target.left;
@@ -291,7 +239,6 @@ class OpenPose {
           const rad = (target.angle * Math.PI) / 180;
           const sin = Math.sin(rad);
           const cos = Math.cos(rad);
-
           for (const item of target._objects) {
             let p = item;
             const p_top = p.top * target.scaleY * flipY;
@@ -330,21 +277,17 @@ class OpenPose {
       }
       this.canvas.renderAll();
     };
-
     this.canvas.on("object:moving", (e) => {
       updateLines(e.target);
     });
-
     this.canvas.on("object:scaling", (e) => {
       updateLines(e.target);
       this.canvas.renderAll();
     });
-
     this.canvas.on("object:rotating", (e) => {
       updateLines(e.target);
       this.canvas.renderAll();
     });
-
     this.canvas.on("object:modified", () => {
       if (
         this.lockMode ||
@@ -356,7 +299,6 @@ class OpenPose {
       this.history_change = true;
       this.uploadPoseFile(this.node.name);
     });
-
     if (!LS_Poses[this.node.name].undo_history.length) {
       this.setPose(default_keypoints);
       this.undo_history.push(this.getJSON());
@@ -369,7 +311,6 @@ class OpenPose {
       this.lockMode = true;
       if (this.undo_history.length > 1)
         this.redo_history.push(this.undo_history.pop());
-
       const content = this.undo_history[this.undo_history.length - 1];
       this.loadPreset(content);
       this.canvas.renderAll();
@@ -408,22 +349,17 @@ class OpenPose {
   }
 
   uploadPoseFile(fileName) {
-    // Upload pose to temp folder ComfyUI
-
     const uploadFile = async (blobFile) => {
       try {
         const resp = await fetch("/upload/image", {
           method: "POST",
           body: blobFile,
         });
-
         if (resp.status === 200) {
           const data = await resp.json();
-
           if (!this.image.options.values.includes(data.name)) {
             this.image.options.values.push(data.name);
           }
-
           this.image.value = data.name;
           this.updateHistoryData();
         } else {
@@ -433,7 +369,6 @@ class OpenPose {
         console.error(error);
       }
     };
-
     this.canvas.lowerCanvasEl.toBlob(function (blob) {
       let formData = new FormData();
       formData.append("image", blob, fileName);
@@ -441,8 +376,6 @@ class OpenPose {
       formData.append("type", "temp");
       uploadFile(formData);
     }, "image/png");
-    // - end
-
     const callb = this.node.callback,
       self = this;
     this.image.callback = function () {
@@ -464,7 +397,6 @@ class OpenPose {
           return [Math.round(item.left), Math.round(item.top)];
         }),
     };
-
     return json;
   }
 
@@ -487,7 +419,6 @@ function createOpenPose(node, inputName, inputData, app) {
   const widget = {
     type: "openpose",
     name: `w${inputName}`,
-
     draw: function (ctx, _, widgetWidth, y, widgetHeight) {
       const margin = 10,
         visible = app.canvas.ds.scale > 0.5 && this.type === "openpose",
@@ -500,7 +431,6 @@ function createOpenPose(node, inputName, inputData, app) {
           .multiplySelf(ctx.getTransform())
           .translateSelf(margin, margin + y),
         w = (widgetWidth - margin * 2 - 3) * transform.a;
-
       Object.assign(this.openpose.style, {
         left: `${transform.a * margin + transform.e}px`,
         top: `${transform.d + transform.f}px`,
@@ -509,17 +439,14 @@ function createOpenPose(node, inputName, inputData, app) {
         position: "absolute",
         zIndex: app.graph._nodes.indexOf(node),
       });
-
       Object.assign(this.openpose.children[0].style, {
         width: w + "px",
         height: w + "px",
       });
-
       Object.assign(this.openpose.children[1].style, {
         width: w + "px",
         height: w + "px",
       });
-
       Array.from(this.openpose.children[2].children).forEach((element) => {
         Object.assign(element.style, {
           width: `${28.0 * transform.a}px`,
@@ -531,12 +458,11 @@ function createOpenPose(node, inputName, inputData, app) {
     },
   };
 
-  // Fabric canvas
   let canvasOpenPose = document.createElement("canvas");
   node.openPose = new OpenPose(node, canvasOpenPose);
 
-  node.openPose.canvas.setWidth(512);
-  node.openPose.canvas.setHeight(512);
+  node.openPose.canvas.setWidth(1024);
+  node.openPose.canvas.setHeight(1024);
 
   let widgetCombo = node.widgets.filter((w) => w.type === "combo");
   widgetCombo[0].value = node.name;
@@ -544,7 +470,6 @@ function createOpenPose(node, inputName, inputData, app) {
   widget.openpose = node.openPose.canvas.wrapperEl;
   widget.parent = node;
 
-  // Create elements undo, redo, clear history
   let panelButtons = document.createElement("div"),
     refButton = document.createElement("button"),
     undoButton = document.createElement("button"),
@@ -583,7 +508,7 @@ function createOpenPose(node, inputName, inputData, app) {
 
   document.body.appendChild(widget.openpose);
 
-  // Add buttons add, reset, undo, redo poses
+  // Add buttons add, reset, change width, change height poses
   node.addWidget("button", "Add pose", "add_pose", () => {
     node.openPose.addPose();
   });
@@ -591,12 +516,24 @@ function createOpenPose(node, inputName, inputData, app) {
   node.addWidget("button", "Reset pose", "reset_pose", () => {
     node.openPose.resetCanvas();
   });
-  // Add buttons Reference image
-  // node.addWidget("button", "Reference image", "reference_image", () => {
-  //  node.openPose.referenceImage();
-  //});
-  
-  // Add customWidget to node
+
+  // Add input fields to change the canvas size
+  node.addWidget("text", "Canvas Width", node.openPose.canvas.getWidth().toString(), (value) => {
+    let newWidth = parseInt(value);
+    if (!isNaN(newWidth)) {
+      node.openPose.canvas.setWidth(newWidth);
+      node.openPose.canvas.renderAll();
+    }
+  });
+
+  node.addWidget("text", "Canvas Height", node.openPose.canvas.getHeight().toString(), (value) => {
+    let newHeight = parseInt(value);
+    if (!isNaN(newHeight)) {
+      node.openPose.canvas.setHeight(newHeight);
+      node.openPose.canvas.renderAll();
+    }
+  });
+
   node.addCustomWidget(widget);
 
   node.onRemoved = () => {
@@ -604,8 +541,6 @@ function createOpenPose(node, inputName, inputData, app) {
       delete LS_Poses[node.name];
       LS_Save();
     }
-
-    // When removing this node we need to remove the input from the DOM
     for (let y in node.widgets) {
       if (node.widgets[y].openpose) {
         node.widgets[y].openpose.remove();
@@ -618,9 +553,6 @@ function createOpenPose(node, inputName, inputData, app) {
   };
 
   app.canvas.onDrawBackground = function () {
-    // Draw node isnt fired once the node is off the screen
-    // if it goes off screen quickly, the input may not be removed
-    // this shifts it off screen so it can be moved back if the node is visible.
     for (let n in app.graph._nodes) {
       n = graph._nodes[n];
       for (let w in n.widgets) {
@@ -637,14 +569,12 @@ function createOpenPose(node, inputName, inputData, app) {
 
 window.LS_Poses = {};
 function LS_Save() {
-  ///console.log("Save:", LS_Poses);
   localStorage.setItem("ComfyUI_Poses", JSON.stringify(LS_Poses));
 }
 
 app.registerExtension({
   name: "CDL.OpenPoseEditorPlus",
   async init(app) {
-    // Any initial setup to run as soon as the page loads
     let style = document.createElement("style");
     style.innerText = `.panelButtons{
       position: absolute;
@@ -657,9 +587,7 @@ app.registerExtension({
     .panelButtons button:last-child{
       border-color: var(--error-text);
       color: var(--error-text) !important;
-    }
-    
-    `;
+    }`;
     document.head.appendChild(style);
   },
   async setup(app) {
