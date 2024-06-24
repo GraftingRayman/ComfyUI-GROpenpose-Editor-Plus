@@ -5,7 +5,7 @@ import hashlib
 import torch
 import numpy as np
 
-class GRopenPoseEditorPlus:
+class openPoseEditorPlus:
   @classmethod
   def INPUT_TYPES(self):
     temp_dir = folder_paths.get_temp_directory()
@@ -48,9 +48,9 @@ class GRopenPoseEditorPlus:
 
 
 NODE_CLASS_MAPPINGS = {
-    "CDL.GROpenPoseEditorPlus": GRopenPoseEditorPlus
+    "CDL.OpenPoseEditorPlus": openPoseEditorPlus
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "CDL.GROpenPoseEditorPlus": "GROpenpose Editor Plus",
+    "CDL.OpenPoseEditorPlus": "Openpose Editor Plus",
 }

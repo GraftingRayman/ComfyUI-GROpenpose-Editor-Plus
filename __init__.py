@@ -11,7 +11,7 @@ __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
 
 def update_javascript():
     extensions_folder = os.path.join(os.path.dirname(os.path.realpath(__main__.__file__)),
-                                    "web" + os.sep + "extensions" + os.sep + "ComfyUI-GROpenPose-Editor-Plus")
+                                    "web" + os.sep + "extensions" + os.sep + "ComfyUI-OpenPose-Editor-Plus")
     javascript_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "js")
 
     if not os.path.exists(extensions_folder):
@@ -36,4 +36,4 @@ def update_javascript():
 
 update_javascript()
 
-print('\033[34mGROpenpose Editor Plus: \033[92mLoaded\033[0m')
+print('\033[34mOpenpose Editor Plus: \033[92mLoaded\033[0m')
