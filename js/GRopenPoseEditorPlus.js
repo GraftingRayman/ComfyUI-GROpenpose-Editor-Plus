@@ -48,24 +48,24 @@ let connect_color = [
 ];
 
 const default_keypoints = [
-  [241, 77],
-  [241, 120],
-  [191, 118],
-  [177, 183],
-  [163, 252],
-  [298, 118],
-  [317, 182],
-  [332, 245],
-  [225, 241],
-  [213, 359],
-  [215, 454],
-  [270, 240],
-  [282, 360],
-  [286, 456],
-  [232, 59],
-  [253, 60],
-  [225, 70],
-  [260, 72],
+  [241 * 2, 77 * 2],
+  [241 * 2, 120 * 2],
+  [191 * 2, 118 * 2],
+  [177 * 2, 183 * 2],
+  [163 * 2, 252 * 2],
+  [298 * 2, 118 * 2],
+  [317 * 2, 182 * 2],
+  [332 * 2, 245 * 2],
+  [225 * 2, 241 * 2],
+  [213 * 2, 359 * 2],
+  [215 * 2, 454 * 2],
+  [270 * 2, 240 * 2],
+  [282 * 2, 360 * 2],
+  [286 * 2, 456 * 2],
+  [232 * 2, 59 * 2],
+  [253 * 2, 60 * 2],
+  [225 * 2, 70 * 2],
+  [260 * 2, 72 * 2],
 ];
 
 class OpenPose {
@@ -573,7 +573,7 @@ function LS_Save() {
 }
 
 app.registerExtension({
-  name: "CDL.OpenPoseEditorPlus",
+  name: "CDL.GROpenPoseEditorPlus",
   async init(app) {
     let style = document.createElement("style");
     style.innerText = `.panelButtons{
@@ -591,7 +591,7 @@ app.registerExtension({
     document.head.appendChild(style);
   },
   async setup(app) {
-    let openPoseNode = app.graph._nodes.filter((wi) => wi.type == "CDL.OpenPoseEditorPlus");
+    let openPoseNode = app.graph._nodes.filter((wi) => wi.type == "CDL.GROpenPoseEditorPlus");
 
     if (openPoseNode.length) {
       openPoseNode.map((n) => {
@@ -609,7 +609,7 @@ app.registerExtension({
     }
   },
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name === "CDL.OpenPoseEditorPlus") {
+    if (nodeData.name === "CDL.GROpenPoseEditorPlus") {
       const onNodeCreated = nodeType.prototype.onNodeCreated;
 
       nodeType.prototype.onNodeCreated = function () {
@@ -618,7 +618,7 @@ app.registerExtension({
           : undefined;
 
         let openPoseNode = app.graph._nodes.filter(
-            (wi) => {wi.type == "CDL.OpenPoseEditorPlus"}
+            (wi) => {wi.type == "CDL.GROpenPoseEditorPlus"}
           ),
           nodeName = `Pose_${openPoseNode.length}`,
           nodeNamePNG = `${nodeName}.png`;
